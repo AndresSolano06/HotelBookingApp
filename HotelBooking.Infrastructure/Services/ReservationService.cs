@@ -2,6 +2,9 @@
 using HotelBooking.Domain.Entities;
 using HotelBooking.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace HotelBooking.Infrastructure.Services
 {
@@ -17,46 +20,41 @@ namespace HotelBooking.Infrastructure.Services
         /// Initializes a new instance of the <see cref="ReservationService"/> class.
         /// </summary>
         /// <param name="context">Database context for hotel booking.</param>
-        /// <param name="emailService">Service for sending emails.</param>
         public ReservationService(HotelBookingDbContext context, IEmailService emailService)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+            _context = context;
+            _emailService = emailService;
         }
 
         /// <summary>
-        /// Retrieves all reservations, including their associated rooms and guests.
+        /// Retrieves all reservations, including guests.
         /// </summary>
-        /// <returns>A list of all reservations with guests.</returns>
+        /// <returns>A list of all reservations.</returns>
         public async Task<IEnumerable<Reservation>> GetAllReservationsAsync()
         {
             return await _context.Reservations
-                .Include(r => r.Room)
-                .Include(r => r.Guests) 
+                .Include(r => r.Guests)
                 .ToListAsync();
         }
 
-
         /// <summary>
-        /// Retrieves a reservation by its ID, including its associated room and guests.
+        /// Retrieves a reservation by its ID, including guests.
         /// </summary>
         /// <param name="id">The reservation ID.</param>
         /// <returns>The reservation if found; otherwise, null.</returns>
         public async Task<Reservation> GetReservationByIdAsync(int id)
         {
             return await _context.Reservations
-                .Include(r => r.Room)
-                .Include(r => r.Guests) 
+                .Include(r => r.Guests)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
-
         /// <summary>
-        /// Creates a new reservation and sends a confirmation email.
+        /// Creates a new reservation, ensuring room capacity is not exceeded.
         /// </summary>
         /// <param name="reservation">The reservation details.</param>
         /// <returns>The newly created reservation.</returns>
-        /// <exception cref="ArgumentException">Thrown if the RoomId does not exist or capacity is insufficient.</exception>
+        /// <exception cref="ArgumentException">Thrown if the RoomId does not exist or if room capacity is exceeded.</exception>
         public async Task<Reservation> CreateReservationAsync(Reservation reservation)
         {
             var room = await _context.Rooms.FindAsync(reservation.RoomId);
@@ -70,22 +68,24 @@ namespace HotelBooking.Infrastructure.Services
                 throw new ArgumentException("The selected room does not have enough capacity.");
             }
 
-            reservation.Room = room;
-
             _context.Reservations.Add(reservation);
             await _context.SaveChangesAsync();
-
-            foreach (var guest in reservation.Guests)
+            if (reservation.Guests.Any())
             {
-                await _emailService.SendReservationEmail(guest.Email, guest.FullName, room.Hotel.Name, reservation.CheckIn, reservation.CheckOut);
+                var primaryGuest = reservation.Guests.First();
+                await _emailService.SendReservationEmail(
+                    primaryGuest.Email,
+                    primaryGuest.FullName,
+                    room.Hotel.Name,
+                    reservation.CheckIn,
+                    reservation.CheckOut
+                );
             }
-
             return reservation;
         }
 
-
         /// <summary>
-        /// Updates an existing reservation, including guest information.
+        /// Updates an existing reservation, including guests and emergency contact details.
         /// </summary>
         /// <param name="id">The ID of the reservation to update.</param>
         /// <param name="reservation">The updated reservation details.</param>
@@ -93,35 +93,24 @@ namespace HotelBooking.Infrastructure.Services
         public async Task<Reservation> UpdateReservationAsync(int id, Reservation reservation)
         {
             var existingReservation = await _context.Reservations
-                .Include(r => r.Guests) 
+                .Include(r => r.Guests)
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (existingReservation == null) return null;
 
-            var room = await _context.Rooms.FindAsync(reservation.RoomId);
-            if (room == null) return null;
-
-            bool conflict = await _context.Reservations.AnyAsync(r =>
-                r.RoomId == reservation.RoomId &&
-                r.Id != id &&
-                (
-                    (reservation.CheckIn >= r.CheckIn && reservation.CheckIn < r.CheckOut) ||
-                    (reservation.CheckOut > r.CheckIn && reservation.CheckOut <= r.CheckOut)
-                )
-            );
-
-            if (conflict) return null;
-            existingReservation.RoomId = reservation.RoomId;
             existingReservation.CheckIn = reservation.CheckIn;
             existingReservation.CheckOut = reservation.CheckOut;
             existingReservation.TotalPrice = reservation.TotalPrice;
+            existingReservation.EmergencyContactName = reservation.EmergencyContactName;
+            existingReservation.EmergencyContactPhone = reservation.EmergencyContactPhone;
+
+            // Update guests
             _context.Guests.RemoveRange(existingReservation.Guests);
             existingReservation.Guests = reservation.Guests;
 
             await _context.SaveChangesAsync();
             return existingReservation;
         }
-
 
         /// <summary>
         /// Cancels a reservation by removing it from the database.
@@ -147,7 +136,7 @@ namespace HotelBooking.Infrastructure.Services
         {
             return await _context.Reservations
                 .Where(r => r.RoomId == roomId)
-                .Include(r => r.Room)
+                .Include(r => r.Guests)
                 .ToListAsync();
         }
 
@@ -160,24 +149,21 @@ namespace HotelBooking.Infrastructure.Services
         /// <returns>True if the room is booked; otherwise, false.</returns>
         public async Task<bool> IsRoomBookedAsync(int roomId, DateTime checkIn, DateTime checkOut)
         {
-            return await _context.Reservations.AnyAsync(r =>
-                r.RoomId == roomId &&
-                ((checkIn >= r.CheckIn && checkIn < r.CheckOut) ||
-                 (checkOut > r.CheckIn && checkOut <= r.CheckOut) ||
-                 (checkIn <= r.CheckIn && checkOut >= r.CheckOut)));
+            return await _context.Reservations
+                .AnyAsync(r => r.RoomId == roomId &&
+                              ((checkIn >= r.CheckIn && checkIn < r.CheckOut) ||
+                               (checkOut > r.CheckIn && checkOut <= r.CheckOut) ||
+                               (checkIn <= r.CheckIn && checkOut >= r.CheckOut)));
         }
 
         /// <summary>
-        /// Checks if there is a conflicting reservation for the specified room and date range.
+        /// Checks if a reservation conflicts with an existing booking.
         /// </summary>
-        /// <param name="reservationId">The ID of the reservation being checked.</param>
-        /// <param name="roomId">The ID of the room to check for conflicts.</param>
-        /// <param name="checkIn">The check-in date of the reservation.</param>
-        /// <param name="checkOut">The check-out date of the reservation.</param>
-        /// <returns>
-        /// A task that represents the asynchronous operation. The task result contains
-        /// a boolean value indicating whether there is a conflicting reservation.
-        /// </returns>
+        /// <param name="reservationId">The ID of the reservation to check.</param>
+        /// <param name="roomId">The ID of the room.</param>
+        /// <param name="checkIn">Check-in date.</param>
+        /// <param name="checkOut">Check-out date.</param>
+        /// <returns>True if a conflict exists; otherwise, false.</returns>
         public async Task<bool> ExistsConflictReservationAsync(int reservationId, int roomId, DateTime checkIn, DateTime checkOut)
         {
             return await _context.Reservations.AnyAsync(r =>

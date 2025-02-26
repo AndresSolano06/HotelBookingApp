@@ -58,41 +58,27 @@ namespace HotelBooking.API.Controllers
 
             if (reservation.RoomId <= 0)
             {
-                return BadRequest(new { message = "RoomId must be greater than 0." });
+                return BadRequest(new { message = "RoomId is required and must be greater than 0." });
             }
 
             var room = await _roomService.GetRoomByIdAsync(reservation.RoomId);
             if (room == null)
             {
-                return NotFound(new { message = $"No room found with ID {reservation.RoomId}." });
-            }
-
-            if (reservation.Guests == null || !reservation.Guests.Any())
-            {
-                return BadRequest(new { message = "At least one guest is required." });
+                return NotFound(new { message = $"Room with ID {reservation.RoomId} not found." });
             }
 
             if (room.Capacity < reservation.Guests.Count)
             {
-                return BadRequest(new { message = "The selected room does not have enough capacity. Maximum allowed: " + room.Capacity });
+                return BadRequest(new { message = "The selected room does not have enough capacity." });
             }
 
-
-            if (reservation.CheckIn >= reservation.CheckOut)
+            if (string.IsNullOrWhiteSpace(reservation.EmergencyContactName) || string.IsNullOrWhiteSpace(reservation.EmergencyContactPhone))
             {
-                return BadRequest(new { message = "Check-out date must be after check-in date." });
+                return BadRequest(new { message = "Emergency contact name and phone are required." });
             }
-
-            bool isRoomBooked = await _reservationService.IsRoomBookedAsync(reservation.RoomId, reservation.CheckIn, reservation.CheckOut);
-            if (isRoomBooked)
-            {
-                return Conflict(new { message = "The room is already booked for the selected dates." });
-            }
-
-            reservation.Room = room;
 
             var createdReservation = await _reservationService.CreateReservationAsync(reservation);
-            return CreatedAtAction(nameof(GetReservations), new { roomId = reservation.RoomId }, createdReservation);
+            return CreatedAtAction(nameof(GetReservationById), new { id = createdReservation.Id }, createdReservation);
         }
 
         /// <summary>
@@ -102,6 +88,7 @@ namespace HotelBooking.API.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<Reservation>), 200)]
         [SwaggerResponse(200, "Reservations retrieved successfully.", typeof(IEnumerable<Reservation>))]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<Reservation>>> GetAllReservations()
         {
             return Ok(await _reservationService.GetAllReservationsAsync());
@@ -122,7 +109,7 @@ namespace HotelBooking.API.Controllers
             var reservation = await _reservationService.GetReservationByIdAsync(id);
             if (reservation == null)
             {
-                return NotFound(new { message = $"Reservation with ID {id} was not found." });
+                return NotFound(new { message = $"Reservation with ID {id} not found." });
             }
             return Ok(reservation);
         }
@@ -146,37 +133,19 @@ namespace HotelBooking.API.Controllers
         {
             if (reservation == null)
             {
-                return BadRequest(new { message = "Reservation data is required." });
+                return BadRequest(new { message = "Reservation cannot be null." });
             }
 
             if (id <= 0)
             {
-                return BadRequest(new { message = "Reservation ID must be valid." });
-            }
-
-            var existingReservation = await _reservationService.GetReservationByIdAsync(id);
-            if (existingReservation == null)
-            {
-                return NotFound(new { message = $"Reservation with ID {id} was not found." });
-            }
-
-            var room = await _roomService.GetRoomByIdAsync(reservation.RoomId);
-            if (room == null)
-            {
-                return NotFound(new { message = $"No room found with ID {reservation.RoomId}." });
-            }
-
-            bool conflict = await _reservationService.ExistsConflictReservationAsync(id, reservation.RoomId, reservation.CheckIn, reservation.CheckOut);
-            if (conflict)
-            {
-                return Conflict(new { message = "The reservation dates conflict with another booking for the same room." });
+                return BadRequest(new { message = "The reservation ID must be a valid number." });
             }
 
             var updatedReservation = await _reservationService.UpdateReservationAsync(id, reservation);
 
             if (updatedReservation == null)
             {
-                return StatusCode(500, new { message = "Error updating reservation." });
+                return NotFound(new { message = $"Reservation with ID {id} not found or update failed." });
             }
 
             return Ok(updatedReservation);

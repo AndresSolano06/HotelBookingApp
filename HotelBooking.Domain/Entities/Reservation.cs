@@ -38,6 +38,19 @@ namespace HotelBooking.Domain.Entities
         public decimal TotalPrice { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the emergency contact.
+        /// </summary>
+        [Required(ErrorMessage = "Emergency contact name is required.")]
+        public string EmergencyContactName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the phone number of the emergency contact.
+        /// </summary>
+        [Required(ErrorMessage = "Emergency contact phone is required.")]
+        [Phone(ErrorMessage = "Invalid phone number format.")]
+        public string EmergencyContactPhone { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the list of guests associated with the reservation.
         /// </summary>
         public List<Guest> Guests { get; set; } = new();

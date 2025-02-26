@@ -63,6 +63,19 @@ namespace HotelBooking.Infrastructure.Data
                 .HasMany(r => r.Guests)
                 .WithOne(g => g.Reservation)
                 .HasForeignKey(g => g.ReservationId);
+
+            // Configure precision for decimal fields
+            modelBuilder.Entity<Room>()
+                .Property(r => r.BasePrice)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Room>()
+                .Property(r => r.Taxes)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Reservation>()
+                .Property(r => r.TotalPrice)
+                .HasPrecision(18, 2);
         }
     }
 }
