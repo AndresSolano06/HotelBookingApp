@@ -99,5 +99,70 @@ namespace HotelBooking.API.Controllers
 
             return Ok(new { message = $"Hotel with ID {id} has been {(isActive ? "activated" : "deactivated")}." });
         }
+
+        /// <summary>
+        /// Searches for available hotels based on optional filters: city, check-in/check-out dates, and number of guests.
+        /// At least one filter is required.
+        /// </summary>
+        /// <param name="city">Optional. The city where the hotel is located.</param>
+        /// <param name="checkIn">Optional. The check-in date (format: YYYY-MM-DD).</param>
+        /// <param name="checkOut">Optional. The check-out date (format: YYYY-MM-DD).</param>
+        /// <param name="guests">Optional. The number of guests.</param>
+        /// <returns>List of available hotels.</returns>
+        [HttpGet("search")]
+        [ProducesResponseType(typeof(IEnumerable<Hotel>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> SearchHotels(
+            [FromQuery] string? city = null,
+            [FromQuery] DateTime? checkIn = null,
+            [FromQuery] DateTime? checkOut = null,
+            [FromQuery] int? guests = null)
+        {
+            // Validate that at least one filter is provided
+            if (string.IsNullOrWhiteSpace(city) && checkIn == null && checkOut == null && guests == null)
+            {
+                return BadRequest(new { message = "At least one search filter (city, check-in, check-out, guests) must be provided." });
+            }
+
+            // Ensure that if dates are provided, check-in is before check-out
+            if (checkIn != null && checkOut != null && checkIn >= checkOut)
+            {
+                return BadRequest(new { message = "Check-out date must be later than check-in date." });
+            }
+
+            var hotels = await _hotelService.SearchHotelsAsync(city, checkIn, checkOut, guests);
+
+            if (!hotels.Any())
+            {
+                return NotFound(new { message = "No available hotels found for the given criteria." });
+            }
+
+            return Ok(hotels);
+        }
+        /// <summary>
+        /// Updates an existing hotel.
+        /// </summary>
+        /// <param name="id">The ID of the hotel to update.</param>
+        /// <param name="hotel">The updated hotel details.</param>
+        /// <returns>The updated hotel if successful; otherwise, a NotFound or BadRequest response.</returns>
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateHotel(int id, [FromBody] Hotel hotel)
+        {
+            if (hotel == null)
+            {
+                return BadRequest(new { message = "Invalid hotel data." });
+            }
+
+            var updatedHotel = await _hotelService.UpdateHotelAsync(id, hotel);
+            if (updatedHotel == null)
+            {
+                return NotFound(new { message = $"Hotel with ID {id} not found." });
+            }
+
+            return Ok(updatedHotel);
+        }
+
+
     }
 }

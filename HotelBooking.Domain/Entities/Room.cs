@@ -43,6 +43,16 @@ namespace HotelBooking.Domain.Entities
         public bool IsActive { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum number of guests that the room can accommodate.
+        /// </summary>
+        /// <remarks>
+        /// This property defines the room's capacity in terms of guests. It is used to filter available rooms 
+        /// when searching for hotels based on the number of guests.
+        /// </remarks>
+        public int Capacity { get; set; }
+
+
+        /// <summary>
         /// Gets or sets the hotel associated with this room.
         /// </summary>
         /// <remarks>

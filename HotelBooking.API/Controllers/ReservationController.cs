@@ -67,10 +67,16 @@ namespace HotelBooking.API.Controllers
                 return NotFound(new { message = $"No room found with ID {reservation.RoomId}." });
             }
 
-            if (string.IsNullOrWhiteSpace(reservation.GuestFullName))
+            if (reservation.Guests == null || !reservation.Guests.Any())
             {
-                return BadRequest(new { message = "Guest full name is required." });
+                return BadRequest(new { message = "At least one guest is required." });
             }
+
+            if (room.Capacity < reservation.Guests.Count)
+            {
+                return BadRequest(new { message = "The selected room does not have enough capacity. Maximum allowed: " + room.Capacity });
+            }
+
 
             if (reservation.CheckIn >= reservation.CheckOut)
             {

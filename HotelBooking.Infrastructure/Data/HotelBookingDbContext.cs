@@ -30,6 +30,11 @@ namespace HotelBooking.Infrastructure.Data
         public DbSet<Reservation> Reservations { get; set; }
 
         /// <summary>
+        /// Gets or sets the DbSet for guests.
+        /// </summary>
+        public DbSet<Guest> Guests { get; set; }
+
+        /// <summary>
         /// Configures entity relationships and constraints.
         /// </summary>
         /// <param name="modelBuilder">The model builder used to configure entity relationships.</param>
@@ -53,18 +58,11 @@ namespace HotelBooking.Infrastructure.Data
                 .WithMany()
                 .HasForeignKey(r => r.RoomId);
 
-            // Configure precision for decimal fields
-            modelBuilder.Entity<Room>()
-                .Property(r => r.BasePrice)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<Room>()
-                .Property(r => r.Taxes)
-                .HasPrecision(18, 2);
-
+            // One-to-Many: A reservation can have multiple guests
             modelBuilder.Entity<Reservation>()
-                .Property(r => r.TotalPrice)
-                .HasPrecision(18, 2);
+                .HasMany(r => r.Guests)
+                .WithOne(g => g.Reservation)
+                .HasForeignKey(g => g.ReservationId);
         }
     }
 }

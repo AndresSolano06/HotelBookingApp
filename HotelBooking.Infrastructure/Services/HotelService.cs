@@ -103,5 +103,52 @@ namespace HotelBooking.Infrastructure.Services
             await _context.SaveChangesAsync();
             return hotel;
         }
+        /// <summary>
+        /// Searches for available hotels in a specific city with open rooms for the given dates and number of guests.
+        /// At least one filter must be provided.
+        /// </summary>
+        /// <param name="city">Optional. City to search hotels in.</param>
+        /// <param name="checkIn">Optional. Check-in date.</param>
+        /// <param name="checkOut">Optional. Check-out date.</param>
+        /// <param name="guests">Optional. Number of guests.</param>
+        /// <returns>List of available hotels.</returns>
+        public async Task<IEnumerable<Hotel>> SearchHotelsAsync(string? city, DateTime? checkIn, DateTime? checkOut, int? guests)
+        {
+            var query = _context.Hotels
+                .Include(h => h.Rooms.Where(r => r.IsActive))
+                .Where(h => h.IsActive)
+                .AsQueryable();
+            if (!string.IsNullOrWhiteSpace(city))
+            {
+                query = query.Where(h => h.City.ToLower() == city.ToLower());
+            }
+
+            if (guests > 0)
+            {
+                query = query.Where(h => h.Rooms.Any(r => r.IsActive && r.Capacity >= guests));
+            }
+
+            if (checkIn != null || checkOut != null)
+            {
+                query = query.Where(h => h.Rooms.Any(r =>
+                    !_context.Reservations.Any(res =>
+                        res.RoomId == r.Id &&
+                        (
+                            (checkIn != null && checkIn >= res.CheckIn && checkIn < res.CheckOut) ||
+                            (checkOut != null && checkOut > res.CheckIn && checkOut <= res.CheckOut) ||
+                            (checkIn != null && checkOut != null && checkIn <= res.CheckIn && checkOut >= res.CheckOut)
+                        )
+                    )
+                ));
+            }
+
+            if (guests != null && guests > 0)
+            {
+                query = query.Where(h => h.Rooms.Any(r => r.IsActive));
+            }
+
+            return await query.ToListAsync();
+        }
+
     }
 }

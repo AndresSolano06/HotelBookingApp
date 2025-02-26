@@ -1,56 +1,51 @@
-﻿using HotelBooking.Domain.Entities;
-using System;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace HotelBooking.Domain.Entities
 {
     /// <summary>
-    /// Represents a reservation for a hotel room.
+    /// Represents a reservation made by a guest for a specific room.
     /// </summary>
     public class Reservation
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the reservation.
+        /// Gets or sets the unique identifier for the reservation.
         /// </summary>
         public int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the ID of the room being reserved.
+        /// Gets or sets the ID of the room associated with this reservation.
         /// </summary>
         public int RoomId { get; set; }
 
         /// <summary>
-        /// Gets or sets the full name of the guest making the reservation.
+        /// Gets or sets the check-in date for the reservation.
         /// </summary>
-        public string GuestFullName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the email address of the guest making the reservation.
-        /// </summary>
-        public string GuestEmail { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the check-in date of the reservation.
-        /// </summary>
+        [Required(ErrorMessage = "Check-in date is required.")]
         public DateTime CheckIn { get; set; }
 
         /// <summary>
-        /// Gets or sets the check-out date of the reservation.
+        /// Gets or sets the check-out date for the reservation.
         /// </summary>
+        [Required(ErrorMessage = "Check-out date is required.")]
         public DateTime CheckOut { get; set; }
 
         /// <summary>
         /// Gets or sets the total price of the reservation.
         /// </summary>
+        [Required(ErrorMessage = "Total price is required.")]
+        [Range(0, double.MaxValue, ErrorMessage = "Total price must be a positive value.")]
         public decimal TotalPrice { get; set; }
 
         /// <summary>
-        /// Gets or sets the room associated with the reservation.
+        /// Gets or sets the list of guests associated with the reservation.
         /// </summary>
-        /// <remarks>
-        /// This property is ignored in JSON serialization to avoid circular references.
-        /// </remarks>
+        public List<Guest> Guests { get; set; } = new();
+
+        /// <summary>
+        /// Navigation property for the associated room.
+        /// </summary>
         [JsonIgnore]
-        public Room? Room { get; set; } = null!;
+        public Room? Room { get; set; }
     }
 }

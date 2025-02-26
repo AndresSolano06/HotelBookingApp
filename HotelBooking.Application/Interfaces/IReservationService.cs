@@ -53,7 +53,7 @@ namespace HotelBooking.Application.Interfaces
         /// <param name="checkIn">The check-in date.</param>
         /// <param name="checkOut">The check-out date.</param>
         /// <returns>True if a conflict exists; otherwise, false.</returns>
-        Task<bool> ExistsConflictReservationAsync(int reservationId, int roomId, DateTime checkIn, DateTime checkOut);
+        Task<bool> ExistsConflictReservationAsync(int reservationId, int roomId, DateTime checkIn, DateTime checkOut); 
 
         /// <summary>
         /// Cancels a reservation by its unique identifier.
