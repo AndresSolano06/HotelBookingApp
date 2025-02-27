@@ -1,152 +1,227 @@
-# Hotel Booking API
+# **Hotel Booking API** 🏨
 
-## 📌 Overview
+## 📌 **Overview**
+Hotel Booking API is a **RESTful API** designed to manage hotels, rooms, and reservations. It provides endpoints to **create, update, retrieve, and delete** hotels, rooms, and reservations efficiently.
 
-This is a RESTful API for managing hotel bookings, rooms, and reservations. It provides endpoints to create, update, retrieve, and delete hotels, rooms, and reservations.
+🌐 **Live API Documentation**: [Swagger UI](https://hotelbookingazure.azurewebsites.net/swagger/index.html)
 
-## 🏗️ Tech Stack
-- .NET 8.0 (ASP.NET Core Web API)
-- Entity Framework Core (EF Core)
-- SQL Server
-- Swagger (NSwag) for API documentation
-- C# for backend development
+---
 
-## 🚀 Features
+## 🏗️ **Tech Stack**
+- ⚡ **.NET 8.0 (ASP.NET Core Web API)**
+- 🛢 **Entity Framework Core (EF Core)**
+- 💾 **SQL Server**
+- 🔍 **Swagger (NSwag) for API Documentation**
+- 🚀 **C# for Backend Development**
 
-✅ Hotels Management (CRUD operations, activation/deactivation).
+---
 
-✅ Rooms Management (CRUD operations, room activation, pricing).
+## 🚀 **Features**
+✔️ **Hotels Management** (CRUD operations, activation/deactivation).  
+✔️ **Rooms Management** (CRUD operations, room pricing & availability).  
+✔️ **Reservations** (Booking, updating, cancellation, conflict prevention).  
+✔️ **Input Validation** (e.g., check-in date must be before check-out date).  
+✔️ **Swagger Documentation** for easy API testing.  
 
-✅ Reservations (Booking, updating, canceling, conflict prevention).
+---
 
-✅ Validation of inputs (e.g., check-in date must be before check-out date).
+## 📌 **Endpoints Documentation**
+### 🏨 **Hotels**
+| Method  | Endpoint                 | Description                          |
+|---------|--------------------------|--------------------------------------|
+| **GET** | `/api/hotel`             | Retrieve all hotels (active by default). |
+| **GET** | `/api/hotel/{id}`        | Retrieve a specific hotel by ID. |
+| **POST** | `/api/hotel`            | Create a new hotel. |
+| **PATCH** | `/api/hotel/{id}/status` | Activate/Deactivate a hotel. |
 
-✅ Swagger Documentation for API testing .
-
-### 🏨 Hotels Endpoints
-
-| Method    | Endpoint             | Description                        |
-| --------- | -------------------- | ---------------------------------- |
-| **GET**   | `/hotel`             | Get all hotels (active by default) |
-| **GET**   | `/hotel/{id}`        | Get a specific hotel by ID         |
-| **POST**  | `/hotel`             | Create a new hotel                 |
-| **PATCH** | `/hotel/{id}/status` | Activate/Deactivate a hotel        |
-
-🔹 Example Request (Create Hotel)
+🔹 **Example Request (Create a Hotel)**
+```json
 {
-  "id": 1,
   "name": "Hotel Paradise",
-  "address": "123 Main Street",
-  "city": "Metropolis",
+  "address": "125 Main Street",
+  "city": "Cali",
   "isActive": true
 }
-
-🔹 Example Response (Success)
+```
+🔹 **Example Response**
+```json
 {
-  "id": 1,
+  "id": 3,
   "name": "Hotel Paradise",
-  "address": "123 Main Street, Cityville",
-  "city": "Metropolis",
+  "address": "125 Main Street",
+  "city": "Cali",
   "isActive": true,
   "rooms": []
 }
+```
 
-### 🏠 Rooms Endpoints
+---
 
-| Method    | Endpoint             | Description                        |
-| --------- | -------------------- | ---------------------------------- |
-| **GET**   | `/room/{hotelId}`    | Get all rooms for a hotel          |
-| **GET**   | `/room/byId/{id}`    | Get a specific room by ID          |
-| **POST**  | `/room`              | Create a new room                  |
-| **PUT**   | `/room/{id}`         | Update an existing room            |
-| **PATCH** | `room/{id}/status`   | Activate/Deactivate a room         |
+### 🏠 **Rooms**
+| Method  | Endpoint                 | Description                          |
+|---------|--------------------------|--------------------------------------|
+| **GET** | `/api/room/{hotelId}`    | Retrieve all rooms for a hotel. |
+| **GET** | `/api/room/byId/{id}`    | Retrieve a specific room by ID. |
+| **POST** | `/api/room`             | Create a new room. |
+| **PUT** | `/api/room/{id}`         | Update an existing room. |
+| **PATCH** | `/api/room/{id}/status` | Activate/Deactivate a room. |
 
-🔹 Example Request (Create Room)
+🔹 **Example Request (Create a Room)**
+```json
 {
-  "hotelId": 1,
+  "hotelId": 3,
   "type": "Suite",
-  "basePrice": 250000.00,
-  "taxes": 50000.00,
-  "location": "Floor 5",
+  "basePrice": 300000.00,
+  "taxes": 60000.00,
+  "location": "Floor 7",
+  "capacity": 5,
   "isActive": true
 }
 
-🔹 Example Response (Success)
+```
+🔹 **Example Response**
+```json
 {
-  "id": 1,
-  "hotelId": 1,
+  "id": 3,
+  "hotelId": 3,
   "type": "Suite",
-  "basePrice": 250000.00,
-  "taxes": 50000.00,
-  "location": "Floor 5",
-  "isActive": true
+  "basePrice": 300000.00,
+  "taxes": 60000.00,
+  "location": "Floor 7",
+  "isActive": true,
+  "capacity": 5
 }
+```
 
-### 🏷️ Reservations Endpoints
+---
 
-| Method    | Endpoint             | Description                        |
-| --------- | -------------------- | ---------------------------------- |
-| **GET**   | `/reservation/{roomId`| Get all reservations for a room        |
-| **GET**   | `/reservation/id/{id}`| Get a specific reservation by ID         |
-| **POST**  | `/reservation`        | Create a new reservation                 |
-| **PUT**   | `/reservation/{id}`   | Update a reservation          |
-| **DELETE**| `/reservation/{id}`   | Cancel a reservation        |
+### 🏷️ **Reservations**
+| Method  | Endpoint                    | Description                        |
+|---------|-----------------------------|------------------------------------|
+| **GET** | `/api/reservation/{roomId}` | Retrieve all reservations for a room. |
+| **GET** | `/api/reservation/id/{id}`  | Retrieve a specific reservation by ID. |
+| **POST** | `/api/reservation`         | Create a new reservation. |
+| **PUT** | `/api/reservation/{id}`     | Update an existing reservation. |
+| **DELETE** | `/api/reservation/{id}`  | Cancel a reservation. |
 
-🔹 Example Request (Create Reservation)
-
+🔹 **Example Request (Create a Reservation)**
+```json
 {
-  "roomId": 1,
-  "guestFullName": "John Doe",
-  "guestEmail": "johndoe@email.com",
-  "checkIn": "2024-07-10T14:00:00",
-  "checkOut": "2024-07-15T12:00:00",
-  "totalPrice": 300000.00
+  "roomId": 3,
+  "checkIn": "2024-07-20T14:00:00",
+  "checkOut": "2024-07-25T12:00:00",
+  "totalPrice": 500000.00,
+  "emergencyContactName": "Maria Gonzalez",
+  "emergencyContactPhone": "+573001234567",
+  "guests": [
+    {
+      "fullName": "Andres Solano",
+      "email": "andresolano.12.651@gmail.com",
+      "dateOfBirth": "1999-10-06",
+      "documentNumber": "1010125555",
+      "documentType": "CC",
+      "gender": "Male",
+      "phoneNumber": "+573213941848"
+    },
+    {
+      "fullName": "Juan Perez",
+      "email": "juan.perez@email.com",
+      "dateOfBirth": "1995-08-20",
+      "documentNumber": "987654321",
+      "documentType": "CC",
+      "gender": "Male",
+      "phoneNumber": "+573001112233"
+    }
+  ]
 }
 
-🔹 Example Response (Success)
-
+```
+🔹 **Example Response**
+```json
 {
-  "id": 1,
-  "roomId": 1,
-  "guestFullName": "John Doe",
-  "guestEmail": "johndoe@email.com",
-  "checkIn": "2024-07-10T14:00:00",
-  "checkOut": "2024-07-15T12:00:00",
-  "totalPrice": 300000.00
+    "id": 2,
+    "roomId": 3,
+    "checkIn": "2024-07-20T14:00:00",
+    "checkOut": "2024-07-25T12:00:00",
+    "totalPrice": 500000,
+    "emergencyContactName": "Maria Gonzalez",
+    "emergencyContactPhone": "+573001234567",
+    "guests": [
+        {
+            "id": 3,
+            "fullName": "Andres Solano",
+            "email": "andresolano.12.651@gmail.com",
+            "dateOfBirth": "1999-10-06T00:00:00",
+            "gender": "Male",
+            "documentType": "CC",
+            "documentNumber": "1010125555",
+            "phoneNumber": "+573213941848",
+            "reservationId": 2
+        },
+        {
+            "id": 4,
+            "fullName": "Juan Perez",
+            "email": "juan.perez@email.com",
+            "dateOfBirth": "1995-08-20T00:00:00",
+            "gender": "Male",
+            "documentType": "CC",
+            "documentNumber": "987654321",
+            "phoneNumber": "+573001112233",
+            "reservationId": 2
+        }
+    ]
 }
+```
 
-## 🔧 Setup & Installation
+---
 
-### 🛠 Prerequisites
+## 🔧 **Setup & Installation**
+### 🛠 **Prerequisites**
+1️⃣ **Install .NET 8.0 SDK** → [Download](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)  
+2️⃣ **Install SQL Server**  
+3️⃣ **Ensure EF Core is installed** (if using migrations)
 
-.NET 8.0 SDK installed ([Download](https://dotnet.microsoft.com/en-us/download/dotnet/8.0))
+---
 
-SQL Server
-
-## 🚀 Steps to Run
-
+## 🚀 **Steps to Run the API**
 ### 1️⃣ Clone this repository:
-
-git clone https://github.com/your-username/hotel-booking-api.git
-cd hotel-booking-api
-
+```sh
+git clone https://github.com/AndresSolano06/HotelBookingApp.git
+cd HotelBookingApp
+```
 ### 2️⃣ Install dependencies:
-
+```sh
 dotnet restore
-
-### 3️⃣ Configure the database connection in appsettings.json
-
+```
+### 3️⃣ Configure the database connection in `appsettings.json`
+```json
 "ConnectionStrings": {
   "DefaultConnection": "Server=your-server;Database=HotelBooking;User Id=your-user;Password=your-password;"
 }
-
+```
 ### 4️⃣ Run migrations & update database:
-
+```sh
 dotnet ef database update
-
+```
 ### 5️⃣ Start the API:
-
+```sh
 dotnet run
-
+```
 ### 6️⃣ Open Swagger UI for API testing:
-📌 http://localhost:5000/swagger
+📌 [https://localhost:7165/swagger](https://localhost:7165/swagger)  
+
+---
+
+## 🔥 **Deployment**
+### **To Azure App Service**
+1. Open Visual Studio.
+2. Right-click on the project → **Publish**.
+3. Select **Azure App Service**.
+4. Deploy & access Swagger:  
+   👉 **[https://hotelbookingazure.azurewebsites.net/swagger/index.html](https://hotelbookingazure.azurewebsites.net/swagger/index.html)**
+
+---
+
+## 📜 **License**
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+

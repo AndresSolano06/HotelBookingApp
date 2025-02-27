@@ -1,9 +1,0 @@
-[build]
-builder = "NIXPACKS"
-buildCommand = "dotnet restore && dotnet publish -c Release -o out"
-
-[start]
-command = "dotnet out/HotelBooking.API.dll"
-
-[env]
-DOTNET_VERSION = "8.0"
