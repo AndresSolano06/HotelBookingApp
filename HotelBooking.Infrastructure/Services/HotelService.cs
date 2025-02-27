@@ -29,9 +29,11 @@ namespace HotelBooking.Infrastructure.Services
         public async Task<IEnumerable<Hotel>> GetAllHotelsAsync(bool includeInactive)
         {
             return await _context.Hotels
+                .Include(h => h.Rooms)  // Incluir las habitaciones
                 .Where(h => includeInactive || h.IsActive)
                 .ToListAsync();
         }
+
 
         /// <summary>
         /// Retrieves a hotel by its ID, including its rooms.
