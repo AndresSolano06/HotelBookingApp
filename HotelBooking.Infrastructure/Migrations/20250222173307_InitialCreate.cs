@@ -60,8 +60,8 @@ namespace HotelBooking.Infrastructure.Migrations
                     RoomId = table.Column<int>(type: "int", nullable: false),
                     GuestFullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     GuestEmail = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CheckIn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CheckOut = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CheckInDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CheckOutDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>

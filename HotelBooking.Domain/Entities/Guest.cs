@@ -1,5 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using HotelBooking.Domain.Enums;
 
 namespace HotelBooking.Domain.Entities
 {
@@ -14,41 +17,48 @@ namespace HotelBooking.Domain.Entities
         public int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the full name of the guest.
+        /// Gets or sets the first name of the guest.
         /// </summary>
-        [Required(ErrorMessage = "Guest full name is required.")]
-        public string FullName { get; set; } = string.Empty;
+        [Required(ErrorMessage = "First name is required.")]
+        public string FirstName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the contact email of the guest.
+        /// Gets or sets the last name of the guest.
         /// </summary>
-        [Required(ErrorMessage = "Guest email is required.")]
-        [EmailAddress(ErrorMessage = "Invalid email format.")]
-        public string Email { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Last name is required.")]
+        public string LastName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the date of birth of the guest.
         /// </summary>
         [Required(ErrorMessage = "Date of birth is required.")]
+        [DataType(DataType.Date)]
         public DateTime DateOfBirth { get; set; }
-
-        /// <summary>
-        /// Gets or sets the gender of the guest.
-        /// </summary>
-        [Required(ErrorMessage = "Gender is required.")]
-        public string Gender { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the type of identification document.
         /// </summary>
         [Required(ErrorMessage = "Document type is required.")]
-        public string DocumentType { get; set; } = string.Empty;
+        public DocumentType DocumentType { get; set; }
 
         /// <summary>
         /// Gets or sets the document number of the guest.
         /// </summary>
         [Required(ErrorMessage = "Document number is required.")]
         public string DocumentNumber { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the gender of the guest.
+        /// </summary>
+        [Required(ErrorMessage = "Gender is required.")]
+        public Gender Gender { get; set; }
+
+        /// <summary>
+        /// Gets or sets the email address of the guest.
+        /// </summary>
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
+        public string Email { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the phone number of the guest.
@@ -65,7 +75,6 @@ namespace HotelBooking.Domain.Entities
         /// <summary>
         /// Navigation property for the associated reservation.
         /// </summary>
-        [JsonIgnore]
-        public Reservation? Reservation { get; set; }
+        public Reservation Reservation { get; set; } = null!;
     }
 }

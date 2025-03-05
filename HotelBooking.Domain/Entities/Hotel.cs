@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Swashbuckle.AspNetCore.Annotations;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace HotelBooking.Domain.Entities
@@ -11,6 +12,7 @@ namespace HotelBooking.Domain.Entities
         /// <summary>
         /// Gets or sets the unique identifier for the hotel.
         /// </summary>
+        [SwaggerSchema(ReadOnly = true)]
         public int Id { get; set; }
 
         /// <summary>

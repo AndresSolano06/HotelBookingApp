@@ -110,11 +110,11 @@ namespace HotelBooking.Infrastructure.Services
         /// At least one filter must be provided.
         /// </summary>
         /// <param name="city">Optional. City to search hotels in.</param>
-        /// <param name="checkIn">Optional. Check-in date.</param>
-        /// <param name="checkOut">Optional. Check-out date.</param>
+        /// <param name="CheckInDate">Optional. Check-in date.</param>
+        /// <param name="CheckOutDate">Optional. Check-out date.</param>
         /// <param name="guests">Optional. Number of guests.</param>
         /// <returns>List of available hotels.</returns>
-        public async Task<IEnumerable<Hotel>> SearchHotelsAsync(string? city, DateTime? checkIn, DateTime? checkOut, int? guests)
+        public async Task<IEnumerable<Hotel>> SearchHotelsAsync(string? city, DateTime? CheckInDate, DateTime? CheckOutDate, int? guests)
         {
             var query = _context.Hotels
                 .Include(h => h.Rooms.Where(r => r.IsActive))
@@ -130,15 +130,20 @@ namespace HotelBooking.Infrastructure.Services
                 query = query.Where(h => h.Rooms.Any(r => r.IsActive && r.Capacity >= guests));
             }
 
-            if (checkIn != null || checkOut != null)
+            if (CheckInDate < DateTime.UtcNow.Date || CheckOutDate < DateTime.UtcNow.Date)
+            {
+                throw new ArgumentException("Search dates cannot be in the past.");
+            }
+
+            if (CheckInDate != null || CheckOutDate != null)
             {
                 query = query.Where(h => h.Rooms.Any(r =>
                     !_context.Reservations.Any(res =>
                         res.RoomId == r.Id &&
                         (
-                            (checkIn != null && checkIn >= res.CheckIn && checkIn < res.CheckOut) ||
-                            (checkOut != null && checkOut > res.CheckIn && checkOut <= res.CheckOut) ||
-                            (checkIn != null && checkOut != null && checkIn <= res.CheckIn && checkOut >= res.CheckOut)
+                            (CheckInDate != null && CheckInDate >= res.CheckInDate && CheckInDate < res.CheckOutDate) ||
+                            (CheckOutDate != null && CheckOutDate > res.CheckInDate && CheckOutDate <= res.CheckOutDate) ||
+                            (CheckInDate != null && CheckOutDate != null && CheckInDate <= res.CheckInDate && CheckOutDate >= res.CheckOutDate)
                         )
                     )
                 ));

@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace HotelBooking.API.Controllers
 {
+    /// <summary>
+    /// Controller for managing reservations.
+    /// </summary>
     [Route("api/reservation")]
     [ApiController]
     public class ReservationController : ControllerBase
@@ -14,6 +17,9 @@ namespace HotelBooking.API.Controllers
         private readonly IReservationService _reservationService;
         private readonly IRoomService _roomService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReservationController"/> class.
+        /// </summary>
         public ReservationController(IReservationService reservationService, IRoomService roomService)
         {
             _reservationService = reservationService;
@@ -23,32 +29,52 @@ namespace HotelBooking.API.Controllers
         /// <summary>
         /// Retrieves all reservations for a specific room.
         /// </summary>
-        /// <param name="roomId">The ID of the room.</param>
-        /// <returns>List of reservations for the given room.</returns>
         [HttpGet("{roomId}")]
         [ProducesResponseType(typeof(IEnumerable<Reservation>), 200)]
         [ProducesResponseType(404)]
-        [SwaggerResponse(200, "Reservations retrieved successfully.", typeof(IEnumerable<Reservation>))]
-        [SwaggerResponse(404, "Room not found.")]
+        [SwaggerOperation(Summary = "Get reservations for a room", Description = "Retrieves all reservations for a specific room.")]
         public async Task<ActionResult<IEnumerable<Reservation>>> GetReservations(int roomId)
         {
             return Ok(await _reservationService.GetReservationsByRoomAsync(roomId));
         }
 
         /// <summary>
+        /// Retrieves all reservations.
+        /// </summary>
+        [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<Reservation>), 200)]
+        [SwaggerOperation(Summary = "Get all reservations", Description = "Retrieves all reservations.")]
+        public async Task<ActionResult<IEnumerable<Reservation>>> GetAllReservations()
+        {
+            return Ok(await _reservationService.GetAllReservationsAsync());
+        }
+
+        /// <summary>
+        /// Retrieves a reservation by its ID.
+        /// </summary>
+        [HttpGet("id/{id}")]
+        [ProducesResponseType(typeof(Reservation), 200)]
+        [ProducesResponseType(404)]
+        [SwaggerOperation(Summary = "Get reservation by ID", Description = "Retrieves the details of a reservation by its ID.")]
+        public async Task<ActionResult<Reservation>> GetReservationById(int id)
+        {
+            var reservation = await _reservationService.GetReservationByIdAsync(id);
+            if (reservation == null)
+            {
+                return NotFound(new { message = $"Reservation with ID {id} not found." });
+            }
+            return Ok(reservation);
+        }
+
+        /// <summary>
         /// Creates a new reservation.
         /// </summary>
-        /// <param name="reservation">Reservation details.</param>
-        /// <returns>Created reservation.</returns>
         [HttpPost]
         [ProducesResponseType(typeof(Reservation), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [ProducesResponseType(409)]
-        [SwaggerResponse(201, "Reservation created successfully.", typeof(Reservation))]
-        [SwaggerResponse(400, "Invalid request. Check input values.")]
-        [SwaggerResponse(404, "Room not found.")]
-        [SwaggerResponse(409, "Room is already booked for the selected dates.")]
+        [SwaggerOperation(Summary = "Create a reservation", Description = "Creates a new reservation with guest details and emergency contact.")]
         public async Task<ActionResult<Reservation>> CreateReservation([FromBody] Reservation reservation)
         {
             if (reservation == null)
@@ -82,53 +108,13 @@ namespace HotelBooking.API.Controllers
         }
 
         /// <summary>
-        /// Retrieves all reservations.
-        /// </summary>
-        /// <returns>List of all reservations.</returns>
-        [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<Reservation>), 200)]
-        [SwaggerResponse(200, "Reservations retrieved successfully.", typeof(IEnumerable<Reservation>))]
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Reservation>>> GetAllReservations()
-        {
-            return Ok(await _reservationService.GetAllReservationsAsync());
-        }
-
-        /// <summary>
-        /// Retrieves a reservation by its ID.
-        /// </summary>
-        /// <param name="id">Reservation ID.</param>
-        /// <returns>Reservation details.</returns>
-        [HttpGet("id/{id}")]
-        [ProducesResponseType(typeof(Reservation), 200)]
-        [ProducesResponseType(404)]
-        [SwaggerResponse(200, "Reservation found successfully.", typeof(Reservation))]
-        [SwaggerResponse(404, "Reservation not found.")]
-        public async Task<ActionResult<Reservation>> GetReservationById(int id)
-        {
-            var reservation = await _reservationService.GetReservationByIdAsync(id);
-            if (reservation == null)
-            {
-                return NotFound(new { message = $"Reservation with ID {id} not found." });
-            }
-            return Ok(reservation);
-        }
-
-        /// <summary>
         /// Updates an existing reservation.
         /// </summary>
-        /// <param name="id">Reservation ID.</param>
-        /// <param name="reservation">Updated reservation details.</param>
-        /// <returns>Updated reservation.</returns>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(Reservation), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        [ProducesResponseType(500)]
-        [SwaggerResponse(200, "Reservation updated successfully.", typeof(Reservation))]
-        [SwaggerResponse(400, "Invalid request. Check input values.")]
-        [SwaggerResponse(404, "Reservation not found.")]
-        [SwaggerResponse(500, "Error updating reservation.")]
+        [SwaggerOperation(Summary = "Update a reservation", Description = "Updates the details of an existing reservation.")]
         public async Task<IActionResult> UpdateReservation(int id, [FromBody] Reservation reservation)
         {
             if (reservation == null)
@@ -152,15 +138,12 @@ namespace HotelBooking.API.Controllers
         }
 
         /// <summary>
-        /// Cancels a reservation.
+        /// Cancels an existing reservation.
         /// </summary>
-        /// <param name="id">Reservation ID.</param>
-        /// <returns>Cancellation confirmation.</returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
-        [SwaggerResponse(200, "Reservation canceled successfully.")]
-        [SwaggerResponse(404, "Reservation not found.")]
+        [SwaggerOperation(Summary = "Cancel a reservation", Description = "Cancels an existing reservation.")]
         public async Task<IActionResult> CancelReservation(int id)
         {
             var success = await _reservationService.CancelReservationAsync(id);

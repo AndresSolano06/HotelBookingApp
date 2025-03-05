@@ -28,9 +28,9 @@ namespace HotelBooking.Infrastructure.Services
         /// <param name="toEmail">Recipient's email address.</param>
         /// <param name="guestName">Guest's full name.</param>
         /// <param name="hotelName">Hotel's name.</param>
-        /// <param name="checkIn">Check-in date.</param>
-        /// <param name="checkOut">Check-out date.</param>
-        public async Task SendReservationEmail(string toEmail, string guestName, string hotelName, DateTime checkIn, DateTime checkOut)
+        /// <param name="CheckInDate">Check-in date.</param>
+        /// <param name="CheckOutDate">Check-out date.</param>
+        public async Task SendReservationEmail(string toEmail, string guestName, string hotelName, DateTime CheckInDate, DateTime CheckOutDate, decimal totalPrice)
         {
             try
             {
@@ -43,7 +43,7 @@ namespace HotelBooking.Infrastructure.Services
                     {
                         From = new MailAddress(_emailSettings.SenderEmail, _emailSettings.SenderName),
                         Subject = "Reservation Confirmation",
-                        Body = $"Hello {guestName},\n\nYour reservation at {hotelName} is confirmed.\nCheck-in: {checkIn}\nCheck-out: {checkOut}\n\nThank you for choosing us!",
+                        Body = $"Hello {guestName},\n\nYour reservation at {hotelName} is confirmed.\nCheck-in: {CheckInDate}\nCheck-out: {CheckOutDate}\n\nThank you for choosing us!",
                         IsBodyHtml = false
                     };
 

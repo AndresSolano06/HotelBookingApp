@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using Swashbuckle.AspNetCore.Annotations;
+using System.Text.Json.Serialization;
 
 namespace HotelBooking.Domain.Entities
 {
@@ -10,6 +11,7 @@ namespace HotelBooking.Domain.Entities
         /// <summary>
         /// Gets or sets the unique identifier of the room.
         /// </summary>
+        [SwaggerSchema(ReadOnly = true)]
         public int Id { get; set; }
 
         /// <summary>

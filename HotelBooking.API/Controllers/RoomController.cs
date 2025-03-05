@@ -1,5 +1,6 @@
 ﻿using HotelBooking.Application.Interfaces;
 using HotelBooking.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
@@ -21,33 +22,49 @@ namespace HotelBooking.API.Controllers
         }
 
         /// <summary>
-        /// Retrieves all rooms for a given hotel.
+        /// Retrieves all rooms for a specific hotel.
         /// </summary>
-        /// <param name="hotelId">The ID of the hotel.</param>
-        /// <returns>List of rooms in the hotel.</returns>
         [HttpGet("{hotelId}")]
         [ProducesResponseType(typeof(IEnumerable<Room>), 200)]
         [ProducesResponseType(404)]
-        [SwaggerResponse(200, "Rooms retrieved successfully.", typeof(IEnumerable<Room>))]
-        [SwaggerResponse(404, "Hotel not found.")]
+        [SwaggerOperation(Summary = "Get rooms by hotel", Description = "Retrieves all rooms for a given hotel.")]
         public async Task<ActionResult<IEnumerable<Room>>> GetRooms(int hotelId)
         {
-            return Ok(await _roomService.GetRoomsByHotelAsync(hotelId));
+            var rooms = await _roomService.GetRoomsByHotelAsync(hotelId);
+            if (rooms == null || !rooms.Any())
+            {
+                return NotFound(new { message = "No rooms found for this hotel." });
+            }
+            return Ok(rooms);
+        }
+
+        /// <summary>
+        /// Retrieves a room by its ID.
+        /// </summary>
+        [HttpGet("byId/{id}")]
+        [ProducesResponseType(typeof(Room), 200)]
+        [ProducesResponseType(404)]
+        [SwaggerOperation(Summary = "Get room by ID", Description = "Retrieves details of a specific room.")]
+        public async Task<ActionResult<Room>> GetRoomById(int id)
+        {
+            var room = await _roomService.GetRoomByIdAsync(id);
+            if (room == null)
+            {
+                return NotFound(new { message = $"Room with ID {id} was not found." });
+            }
+            return Ok(room);
         }
 
         /// <summary>
         /// Creates a new room in a hotel.
         /// </summary>
-        /// <param name="room">Room details.</param>
-        /// <returns>Created room.</returns>
         [HttpPost]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(typeof(Room), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        [SwaggerResponse(201, "Room created successfully.", typeof(Room))]
-        [SwaggerResponse(400, "Invalid request. Check input values.")]
-        [SwaggerResponse(404, "Hotel not found.")]
-        public async Task<ActionResult<Room>> CreateRoom(Room room)
+        [SwaggerOperation(Summary = "Create a new room", Description = "Adds a new room to a specified hotel.")]
+        public async Task<ActionResult<Room>> CreateRoom([FromBody] Room room)
         {
             if (room.HotelId <= 0)
             {
@@ -75,39 +92,15 @@ namespace HotelBooking.API.Controllers
         }
 
         /// <summary>
-        /// Retrieves a room by its ID.
-        /// </summary>
-        /// <param name="id">Room ID.</param>
-        /// <returns>Room details.</returns>
-        [HttpGet("byId/{id}")]
-        [ProducesResponseType(typeof(Room), 200)]
-        [ProducesResponseType(404)]
-        [SwaggerResponse(200, "Room found successfully.", typeof(Room))]
-        [SwaggerResponse(404, "Room not found.")]
-        public async Task<ActionResult<Room>> GetRoomById(int id)
-        {
-            var room = await _roomService.GetRoomByIdAsync(id);
-            if (room == null)
-            {
-                return NotFound(new { message = $"Room with ID {id} was not found." });
-            }
-            return Ok(room);
-        }
-
-        /// <summary>
         /// Updates an existing room.
         /// </summary>
-        /// <param name="id">Room ID.</param>
-        /// <param name="room">Updated room details.</param>
-        /// <returns>Updated room.</returns>
         [HttpPut("{id}")]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(typeof(Room), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        [SwaggerResponse(200, "Room updated successfully.", typeof(Room))]
-        [SwaggerResponse(400, "Invalid request. Check input values.")]
-        [SwaggerResponse(404, "Room not found.")]
-        public async Task<ActionResult<Room>> UpdateRoom(int id, Room room)
+        [SwaggerOperation(Summary = "Update a room", Description = "Updates the details of an existing room.")]
+        public async Task<ActionResult<Room>> UpdateRoom(int id, [FromBody] Room room)
         {
             if (id <= 0)
             {
@@ -148,16 +141,12 @@ namespace HotelBooking.API.Controllers
         /// <summary>
         /// Activates or deactivates a room.
         /// </summary>
-        /// <param name="id">Room ID.</param>
-        /// <param name="isActive">New status.</param>
-        /// <returns>Status update message.</returns>
         [HttpPatch("{id}/status")]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-        [SwaggerResponse(200, "Room status updated successfully.")]
-        [SwaggerResponse(404, "Room not found.")]
-        [SwaggerResponse(500, "Error updating room.")]
+        [SwaggerOperation(Summary = "Activate/Deactivate a room", Description = "Updates the status of a room (active/inactive).")]
         public async Task<IActionResult> UpdateRoomStatus(int id, [FromBody] bool isActive)
         {
             var room = await _roomService.GetRoomByIdAsync(id);

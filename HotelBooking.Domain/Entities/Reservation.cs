@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HotelBooking.Domain.Entities
 {
@@ -19,36 +21,9 @@ namespace HotelBooking.Domain.Entities
         public int RoomId { get; set; }
 
         /// <summary>
-        /// Gets or sets the check-in date for the reservation.
+        /// Gets or sets the associated room entity.
         /// </summary>
-        [Required(ErrorMessage = "Check-in date is required.")]
-        public DateTime CheckIn { get; set; }
-
-        /// <summary>
-        /// Gets or sets the check-out date for the reservation.
-        /// </summary>
-        [Required(ErrorMessage = "Check-out date is required.")]
-        public DateTime CheckOut { get; set; }
-
-        /// <summary>
-        /// Gets or sets the total price of the reservation.
-        /// </summary>
-        [Required(ErrorMessage = "Total price is required.")]
-        [Range(0, double.MaxValue, ErrorMessage = "Total price must be a positive value.")]
-        public decimal TotalPrice { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the emergency contact.
-        /// </summary>
-        [Required(ErrorMessage = "Emergency contact name is required.")]
-        public string EmergencyContactName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the phone number of the emergency contact.
-        /// </summary>
-        [Required(ErrorMessage = "Emergency contact phone is required.")]
-        [Phone(ErrorMessage = "Invalid phone number format.")]
-        public string EmergencyContactPhone { get; set; } = string.Empty;
+        public Room Room { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the list of guests associated with the reservation.
@@ -56,9 +31,32 @@ namespace HotelBooking.Domain.Entities
         public List<Guest> Guests { get; set; } = new();
 
         /// <summary>
-        /// Navigation property for the associated room.
+        /// Gets or sets the check-in date for the reservation.
         /// </summary>
-        [JsonIgnore]
-        public Room? Room { get; set; }
+        [Required]
+        public DateTime CheckInDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the check-out date for the reservation.
+        /// </summary>
+        [Required]
+        public DateTime CheckOutDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the emergency contact name.
+        /// </summary>
+        [Required]
+        public string EmergencyContactName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the emergency contact phone number.
+        /// </summary>
+        [Required]
+        public string EmergencyContactPhone { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the total price of the reservation.
+        /// </summary>
+        public decimal TotalPrice { get; set; }
     }
 }
