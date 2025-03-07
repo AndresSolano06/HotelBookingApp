@@ -105,6 +105,7 @@ namespace HotelBooking.API.Controllers
         [HttpPatch("{id}/status")]
         [Authorize(Roles = "admin")]
         [ProducesResponseType(200)]
+        [SwaggerResponse(401, "Unauthorized. You need to pass a valid Bearer Token.")]
         [ProducesResponseType(404)]
         public async Task<ActionResult> UpdateHotelStatus(int id, [FromBody] bool isActive)
         {

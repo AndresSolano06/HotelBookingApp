@@ -1,4 +1,4 @@
-using HotelBooking.Application.Interfaces;
+﻿using HotelBooking.Application.Interfaces;
 using HotelBooking.Infrastructure.Services;
 using HotelBooking.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -39,9 +39,36 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
+    // Definir Bearer como autenticación HTTP en Swagger
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Ingrese el token JWT en este formato: Bearer {token}",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http, // ✅ Cambiado de ApiKey a Http
+        Scheme = "Bearer"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+
     var xmlFilename = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
+
+
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
