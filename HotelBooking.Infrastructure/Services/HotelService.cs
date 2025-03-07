@@ -86,13 +86,25 @@ namespace HotelBooking.Infrastructure.Services
         /// <returns>True if deletion was successful; otherwise, false.</returns>
         public async Task<bool> DeleteHotelAsync(int id)
         {
-            var hotel = await _context.Hotels.FindAsync(id);
-            if (hotel == null) return false;
+            var hotel = await _context.Hotels
+                .Include(h => h.Rooms) 
+                .FirstOrDefaultAsync(h => h.Id == id);
+
+            if (hotel == null)
+            {
+                return false; 
+            }
+
+            if (hotel.Rooms.Any(r => r.IsActive))
+            {
+                throw new InvalidOperationException($"Hotel with ID {id} cannot be deleted because it has active rooms.");
+            }
 
             _context.Hotels.Remove(hotel);
             await _context.SaveChangesAsync();
             return true;
         }
+
 
         /// <summary>
         /// Updates a hotel entity in the database.
@@ -110,43 +122,60 @@ namespace HotelBooking.Infrastructure.Services
         /// At least one filter must be provided.
         /// </summary>
         /// <param name="city">Optional. City to search hotels in.</param>
-        /// <param name="checkIn">Optional. Check-in date.</param>
-        /// <param name="checkOut">Optional. Check-out date.</param>
+        /// <param name="CheckInDate">Optional. Check-in date.</param>
+        /// <param name="CheckOutDate">Optional. Check-out date.</param>
         /// <param name="guests">Optional. Number of guests.</param>
         /// <returns>List of available hotels.</returns>
-        public async Task<IEnumerable<Hotel>> SearchHotelsAsync(string? city, DateTime? checkIn, DateTime? checkOut, int? guests)
+        public async Task<IEnumerable<Hotel>> SearchHotelsAsync(string? city, DateTime? checkInDate, DateTime? checkOutDate, int? guests)
         {
             var query = _context.Hotels
                 .Include(h => h.Rooms.Where(r => r.IsActive))
                 .Where(h => h.IsActive)
                 .AsQueryable();
-            if (!string.IsNullOrWhiteSpace(city))
+
+            if (guests != null && guests < 1)
             {
-                query = query.Where(h => h.City.ToLower() == city.ToLower());
+                throw new ArgumentException("Guest count must be at least 1.");
             }
 
-            if (guests > 0)
+            if (checkInDate != null && checkInDate < DateTime.UtcNow.Date)
+            {
+                throw new ArgumentException("Check-in date cannot be in the past.");
+            }
+
+            if (checkOutDate != null && checkOutDate < DateTime.UtcNow.Date)
+            {
+                throw new ArgumentException("Check-out date cannot be in the past.");
+            }
+
+            if (checkInDate != null && checkOutDate != null && checkInDate >= checkOutDate)
+            {
+                throw new ArgumentException("Check-in date must be before check-out date.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(city))
+            {
+                city = city.Trim().ToLower();
+                query = query.Where(h => EF.Functions.Like(h.City.ToLower(), city));
+            }
+
+            if (guests != null && guests > 0)
             {
                 query = query.Where(h => h.Rooms.Any(r => r.IsActive && r.Capacity >= guests));
             }
 
-            if (checkIn != null || checkOut != null)
+            if (checkInDate != null || checkOutDate != null)
             {
                 query = query.Where(h => h.Rooms.Any(r =>
                     !_context.Reservations.Any(res =>
                         res.RoomId == r.Id &&
                         (
-                            (checkIn != null && checkIn >= res.CheckIn && checkIn < res.CheckOut) ||
-                            (checkOut != null && checkOut > res.CheckIn && checkOut <= res.CheckOut) ||
-                            (checkIn != null && checkOut != null && checkIn <= res.CheckIn && checkOut >= res.CheckOut)
+                            (checkInDate != null && checkInDate >= res.CheckInDate && checkInDate < res.CheckOutDate) ||
+                            (checkOutDate != null && checkOutDate > res.CheckInDate && checkOutDate <= res.CheckOutDate) ||
+                            (checkInDate != null && checkOutDate != null && checkInDate <= res.CheckInDate && checkOutDate >= res.CheckOutDate)
                         )
                     )
                 ));
-            }
-
-            if (guests != null && guests > 0)
-            {
-                query = query.Where(h => h.Rooms.Any(r => r.IsActive));
             }
 
             return await query.ToListAsync();

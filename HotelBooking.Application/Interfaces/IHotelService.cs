@@ -57,11 +57,11 @@ namespace HotelBooking.Application.Interfaces
         /// Searches hotels based on city, check-in date, check-out date, and number of guests.
         /// </summary>
         /// <param name="city">City where the hotel is located (optional).</param>
-        /// <param name="checkIn">Check-in date (optional).</param>
-        /// <param name="checkOut">Check-out date (optional).</param>
+        /// <param name="CheckInDate">Check-in date (optional).</param>
+        /// <param name="CheckOutDate">Check-out date (optional).</param>
         /// <param name="guests">Number of guests (optional).</param>
         /// <returns>A list of hotels that match the search criteria.</returns>
-        Task<IEnumerable<Hotel>> SearchHotelsAsync(string? city, DateTime? checkIn, DateTime? checkOut, int? guests);
+        Task<IEnumerable<Hotel>> SearchHotelsAsync(string? city, DateTime? CheckInDate, DateTime? CheckOutDate, int? guests);
 
 
     }

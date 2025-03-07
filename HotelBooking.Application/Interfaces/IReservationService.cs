@@ -50,10 +50,10 @@ namespace HotelBooking.Application.Interfaces
         /// </summary>
         /// <param name="reservationId">The ID of the reservation to check (used for updates).</param>
         /// <param name="roomId">The ID of the room.</param>
-        /// <param name="checkIn">The check-in date.</param>
-        /// <param name="checkOut">The check-out date.</param>
+        /// <param name="CheckInDate">The check-in date.</param>
+        /// <param name="CheckOutDate">The check-out date.</param>
         /// <returns>True if a conflict exists; otherwise, false.</returns>
-        Task<bool> ExistsConflictReservationAsync(int reservationId, int roomId, DateTime checkIn, DateTime checkOut); 
+        Task<bool> ExistsConflictReservationAsync(int reservationId, int roomId, DateTime CheckInDate, DateTime CheckOutDate); 
 
         /// <summary>
         /// Cancels a reservation by its unique identifier.
@@ -66,9 +66,9 @@ namespace HotelBooking.Application.Interfaces
         /// Checks if a room is already booked for a specific date range.
         /// </summary>
         /// <param name="roomId">The unique identifier of the room.</param>
-        /// <param name="checkIn">The check-in date.</param>
-        /// <param name="checkOut">The check-out date.</param>
+        /// <param name="CheckInDate">The check-in date.</param>
+        /// <param name="CheckOutDate">The check-out date.</param>
         /// <returns>True if the room is booked; otherwise, false.</returns>
-        Task<bool> IsRoomBookedAsync(int roomId, DateTime checkIn, DateTime checkOut);
+        Task<bool> IsRoomBookedAsync(int roomId, DateTime CheckInDate, DateTime CheckOutDate);
     }
 }
