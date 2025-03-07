@@ -43,7 +43,7 @@ namespace HotelBooking.Infrastructure.Services
                     {
                         From = new MailAddress(_emailSettings.SenderEmail, _emailSettings.SenderName),
                         Subject = "Reservation Confirmation",
-                        Body = $"Hello {guestName},\n\nYour reservation at {hotelName} is confirmed.\nCheck-in: {CheckInDate}\nCheck-out: {CheckOutDate}\n\nThank you for choosing us!",
+                        Body = $"Hello {guestName},\n\nYour reservation at {hotelName} is confirmed.\nCheck-in: {CheckInDate}\nCheck-out: {CheckOutDate}\nTotal Price: {totalPrice}\n\nThank you for choosing us!",
                         IsBodyHtml = false
                     };
 

@@ -2,6 +2,7 @@
 using HotelBooking.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -87,6 +88,11 @@ namespace HotelBooking.API.Controllers
                 return BadRequest(new { message = "Base price and taxes must be positive values." });
             }
 
+            if (room.Capacity <= 0 )
+            {
+                return BadRequest(new { message = "the capacity must be greater than 0" });
+            }
+
             var createdRoom = await _roomService.CreateRoomAsync(room);
             return CreatedAtAction(nameof(GetRoomById), new { id = createdRoom.Id }, createdRoom);
         }
@@ -107,21 +113,15 @@ namespace HotelBooking.API.Controllers
                 return BadRequest(new { message = "Room ID must be greater than 0." });
             }
 
-            if (room.HotelId <= 0)
-            {
-                return BadRequest(new { message = "Hotel ID must be greater than 0." });
-            }
-
             var existingRoom = await _roomService.GetRoomByIdAsync(id);
             if (existingRoom == null)
             {
                 return NotFound(new { message = $"Room with ID {id} was not found." });
             }
 
-            var hotel = await _hotelService.GetHotelByIdAsync(room.HotelId);
-            if (hotel == null)
+            if (room.HotelId != 0)
             {
-                return NotFound(new { message = $"No hotel found with ID {room.HotelId}." });
+                return NotFound(new { message = $"Do not enter the hotel ID as it cannot be updated." });
             }
 
             if (string.IsNullOrWhiteSpace(room.Type) || string.IsNullOrWhiteSpace(room.Location))
@@ -132,6 +132,11 @@ namespace HotelBooking.API.Controllers
             if (room.BasePrice < 0 || room.Taxes < 0)
             {
                 return BadRequest(new { message = "Base price and taxes must be positive values." });
+            }
+
+            if (room.Capacity <= 0)
+            {
+                return BadRequest(new { message = "the capacity must be greater than 0" });
             }
 
             var updatedRoom = await _roomService.UpdateRoomAsync(id, room);
@@ -165,6 +170,26 @@ namespace HotelBooking.API.Controllers
 
             string statusMessage = isActive ? "activated" : "deactivated";
             return Ok(new { message = $"Room with ID {id} has been {statusMessage}." });
+        }
+
+
+        /// <summary>
+        /// Deletes a Room by its ID (Admin Only).
+        /// </summary>
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> DeleteRoom(int id)
+        {
+            var success = await _roomService.DeleteRoomAsync(id);
+            if (!success)
+            {
+                return NotFound(new { message = $"Room with ID {id} was not found or cannot be deleted" });
+            }
+
+            return Ok(new { message = $"Room with ID {id} has been successfully deleted." });
         }
     }
 }

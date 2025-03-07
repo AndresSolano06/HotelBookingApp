@@ -1,6 +1,8 @@
 ﻿using HotelBooking.Application.Interfaces;
 using HotelBooking.Domain.Entities;
 using HotelBooking.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelBooking.Infrastructure.Services
@@ -68,6 +70,7 @@ namespace HotelBooking.Infrastructure.Services
             existingRoom.Taxes = room.Taxes;
             existingRoom.Location = room.Location;
             existingRoom.IsActive = room.IsActive;
+            existingRoom.Capacity = room.Capacity;
 
             await _context.SaveChangesAsync();
             return existingRoom;
@@ -119,5 +122,6 @@ namespace HotelBooking.Infrastructure.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
     }
 }

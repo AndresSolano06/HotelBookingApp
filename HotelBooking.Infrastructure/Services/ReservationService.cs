@@ -39,10 +39,18 @@ namespace HotelBooking.Infrastructure.Services
 
         public async Task<Reservation> CreateReservationAsync(Reservation reservation)
         {
-            var room = await _context.Rooms.FindAsync(reservation.RoomId);
+            var room = await _context.Rooms
+                .Include(r => r.Hotel)
+                .FirstOrDefaultAsync(r => r.Id == reservation.RoomId);
+
             if (room == null)
             {
                 throw new ArgumentException("The specified RoomId does not exist.");
+            }
+
+            if (!room.IsActive)
+            {
+                throw new ArgumentException("The selected room is not available for booking.");
             }
 
             if (reservation.CheckInDate < DateTime.UtcNow.Date)
@@ -84,13 +92,14 @@ namespace HotelBooking.Infrastructure.Services
                 var primaryGuest = reservation.Guests.First();
                 await _emailService.SendReservationEmail(
                     primaryGuest.Email,
-                    primaryGuest.FirstName + " " + primaryGuest.LastName,
+                    $"{primaryGuest.FirstName}  {primaryGuest.LastName}",
                     room.Hotel.Name,
                     reservation.CheckInDate,
                     reservation.CheckOutDate,
                     reservation.TotalPrice
                 );
             }
+
             return reservation;
         }
 
@@ -101,6 +110,17 @@ namespace HotelBooking.Infrastructure.Services
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (existingReservation == null) return null;
+
+            var room = await _context.Rooms.FirstOrDefaultAsync(r => r.Id == reservation.RoomId);
+            if (room == null)
+            {
+                throw new ArgumentException("The specified RoomId does not exist.");
+            }
+
+            if (!room.IsActive)
+            {
+                throw new ArgumentException("The selected room is not available for booking.");
+            }
 
             if (await ExistsConflictReservationAsync(id, reservation.RoomId, reservation.CheckInDate, reservation.CheckOutDate))
             {
@@ -115,9 +135,11 @@ namespace HotelBooking.Infrastructure.Services
                 }
             }
 
+            int days = (reservation.CheckOutDate - reservation.CheckInDate).Days;
+            existingReservation.TotalPrice = (room.BasePrice + room.Taxes) * days;
+
             existingReservation.CheckInDate = reservation.CheckInDate;
             existingReservation.CheckOutDate = reservation.CheckOutDate;
-            existingReservation.TotalPrice = reservation.TotalPrice;
             existingReservation.EmergencyContactName = reservation.EmergencyContactName;
             existingReservation.EmergencyContactPhone = reservation.EmergencyContactPhone;
 
@@ -127,6 +149,7 @@ namespace HotelBooking.Infrastructure.Services
             await _context.SaveChangesAsync();
             return existingReservation;
         }
+
 
         public async Task<bool> CancelReservationAsync(int id)
         {

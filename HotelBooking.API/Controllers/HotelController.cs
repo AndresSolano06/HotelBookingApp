@@ -130,14 +130,23 @@ namespace HotelBooking.API.Controllers
         [ProducesResponseType(400)]
         public async Task<IActionResult> DeleteHotel(int id)
         {
-            var success = await _hotelService.DeleteHotelAsync(id);
-            if (!success)
+            try
             {
-                return NotFound(new { message = $"Hotel with ID {id} was not found or cannot be deleted (has active rooms)." });
-            }
+                var success = await _hotelService.DeleteHotelAsync(id);
 
-            return Ok(new { message = $"Hotel with ID {id} has been successfully deleted." });
+                if (!success)
+                {
+                    return NotFound(new { message = $"Hotel with ID {id} was not found." });
+                }
+
+                return Ok(new { message = $"Hotel with ID {id} has been successfully deleted." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message }); // Maneja el caso de habitaciones activas
+            }
         }
+
 
         /// <summary>
         /// Searches for available hotels based on optional filters.
@@ -148,29 +157,26 @@ namespace HotelBooking.API.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> SearchHotels(
-            [FromQuery] string? city = null,
-            [FromQuery] DateTime? CheckInDate = null,
-            [FromQuery] DateTime? CheckOutDate = null,
-            [FromQuery] int? guests = null)
+        [FromQuery] string? city = null,
+        [FromQuery] DateTime? CheckInDate = null,
+        [FromQuery] DateTime? CheckOutDate = null,
+        [FromQuery] int? guests = null)
         {
-            if (string.IsNullOrWhiteSpace(city) && CheckInDate == null && CheckOutDate == null && guests == null)
+            try
             {
-                return BadRequest(new { message = "At least one search filter (city, check-in, check-out, guests) must be provided." });
-            }
+                var hotels = await _hotelService.SearchHotelsAsync(city, CheckInDate, CheckOutDate, guests);
 
-            if (CheckInDate != null && CheckOutDate != null && CheckInDate >= CheckOutDate)
+                if (!hotels.Any())
+                {
+                    return NotFound(new { message = "No available hotels found for the given criteria." });
+                }
+
+                return Ok(hotels);
+            }
+            catch (ArgumentException ex)
             {
-                return BadRequest(new { message = "Check-out date must be later than check-in date." });
+                return BadRequest(new { message = ex.Message });
             }
-
-            var hotels = await _hotelService.SearchHotelsAsync(city, CheckInDate, CheckOutDate, guests);
-
-            if (!hotels.Any())
-            {
-                return NotFound(new { message = "No available hotels found for the given criteria." });
-            }
-
-            return Ok(hotels);
         }
     }
 }

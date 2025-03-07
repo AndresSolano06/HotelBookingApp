@@ -23,7 +23,7 @@ namespace HotelBooking.Domain.Entities
         /// <summary>
         /// Gets or sets the associated room entity.
         /// </summary>
-        public Room Room { get; set; } = null!;
+        public Room? Room { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the list of guests associated with the reservation.

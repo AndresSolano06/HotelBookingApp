@@ -1,5 +1,6 @@
 ﻿using HotelBooking.Application.Interfaces;
 using HotelBooking.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
@@ -70,6 +71,7 @@ namespace HotelBooking.API.Controllers
         /// Creates a new reservation.
         /// </summary>
         [HttpPost]
+        [Authorize(Roles = "guest")]
         [ProducesResponseType(typeof(Reservation), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
@@ -77,35 +79,33 @@ namespace HotelBooking.API.Controllers
         [SwaggerOperation(Summary = "Create a reservation", Description = "Creates a new reservation with guest details and emergency contact.")]
         public async Task<ActionResult<Reservation>> CreateReservation([FromBody] Reservation reservation)
         {
-            if (reservation == null)
+            try
             {
-                return BadRequest(new { message = "Reservation data is required." });
-            }
+                if (reservation == null)
+                {
+                    return BadRequest(new { message = "Reservation data is required." });
+                }
 
-            if (reservation.RoomId <= 0)
+                if (reservation.RoomId <= 0)
+                {
+                    return BadRequest(new { message = "RoomId is required and must be greater than 0." });
+                }
+
+                if (string.IsNullOrWhiteSpace(reservation.EmergencyContactName) ||
+                    string.IsNullOrWhiteSpace(reservation.EmergencyContactPhone))
+                {
+                    return BadRequest(new { message = "Emergency contact name and phone are required." });
+                }
+
+                var createdReservation = await _reservationService.CreateReservationAsync(reservation);
+                return CreatedAtAction(nameof(GetReservationById), new { id = createdReservation.Id }, createdReservation);
+            }
+            catch (ArgumentException ex)
             {
-                return BadRequest(new { message = "RoomId is required and must be greater than 0." });
+                return BadRequest(new { message = ex.Message });
             }
-
-            var room = await _roomService.GetRoomByIdAsync(reservation.RoomId);
-            if (room == null)
-            {
-                return NotFound(new { message = $"Room with ID {reservation.RoomId} not found." });
-            }
-
-            if (room.Capacity < reservation.Guests.Count)
-            {
-                return BadRequest(new { message = "The selected room does not have enough capacity." });
-            }
-
-            if (string.IsNullOrWhiteSpace(reservation.EmergencyContactName) || string.IsNullOrWhiteSpace(reservation.EmergencyContactPhone))
-            {
-                return BadRequest(new { message = "Emergency contact name and phone are required." });
-            }
-
-            var createdReservation = await _reservationService.CreateReservationAsync(reservation);
-            return CreatedAtAction(nameof(GetReservationById), new { id = createdReservation.Id }, createdReservation);
         }
+
 
         /// <summary>
         /// Updates an existing reservation.

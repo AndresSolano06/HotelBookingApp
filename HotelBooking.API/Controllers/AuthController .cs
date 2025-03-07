@@ -17,6 +17,7 @@ namespace HotelBooking.API.Controllers
     /// </summary>
     [Route("api/auth")]
     [ApiController]
+    [SwaggerTag("Authentication & Authorization")]
     public class AuthController : ControllerBase
     {
         private readonly IConfiguration _config;
@@ -36,15 +37,22 @@ namespace HotelBooking.API.Controllers
         /// <summary>
         /// Authenticates a user and returns a JWT token.
         /// </summary>
+        /// <remarks>
+        /// **Example Request:**
+        /// ```json
+        /// {
+        ///   "username": "adminuser",
+        ///   "password": "password123"
+        /// }
+        /// ```
+        /// </remarks>
         /// <param name="loginRequest">The user's login credentials.</param>
         /// <returns>A JWT token if authentication is successful.</returns>
         [HttpPost("login")]
         [ProducesResponseType(typeof(string), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
-        [SwaggerResponse(200, "User authenticated successfully.", typeof(string))]
-        [SwaggerResponse(400, "Invalid request. Missing required fields.")]
-        [SwaggerResponse(401, "Invalid credentials.")]
+        [SwaggerOperation(Summary = "User Authentication", Description = "Authenticates a user using username and password. Returns a JWT token for authorization.")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
             if (string.IsNullOrWhiteSpace(loginRequest.Username) || string.IsNullOrWhiteSpace(loginRequest.Password))
@@ -67,13 +75,23 @@ namespace HotelBooking.API.Controllers
         /// <summary>
         /// Registers a new user.
         /// </summary>
+        /// <remarks>
+        /// **Example Request:**
+        /// ```json
+        /// {
+        ///   "username": "newuser",
+        ///   "password": "SecurePass123!",
+        ///   "email": "newuser@email.com",
+        ///   "role": "guest"
+        /// }
+        /// ```
+        /// </remarks>
         /// <param name="registerRequest">User registration details.</param>
         /// <returns>A success message if registration is successful.</returns>
         [HttpPost("register")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        [SwaggerResponse(200, "User registered successfully.")]
-        [SwaggerResponse(400, "Invalid request. Username already exists or missing required fields.")]
+        [SwaggerOperation(Summary = "User Registration", Description = "Registers a new user with a username, password, email, and optional role.")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
         {
             if (string.IsNullOrWhiteSpace(registerRequest.Username) ||

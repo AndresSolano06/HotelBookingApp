@@ -75,6 +75,6 @@ namespace HotelBooking.Domain.Entities
         /// <summary>
         /// Navigation property for the associated reservation.
         /// </summary>
-        public Reservation Reservation { get; set; } = null!;
+        public Reservation? Reservation { get; set; } = null!;
     }
 }
