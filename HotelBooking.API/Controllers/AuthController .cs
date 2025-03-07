@@ -41,8 +41,8 @@ namespace HotelBooking.API.Controllers
         /// **Example Request:**
         /// ```json
         /// {
-        ///   "username": "adminuser",
-        ///   "password": "password123"
+        ///   "username": "Andres Solano Guest",
+        ///   "password": "Bx&lt;01=OF3fe0"
         /// }
         /// ```
         /// </remarks>
@@ -91,7 +91,7 @@ namespace HotelBooking.API.Controllers
         [HttpPost("register")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        [SwaggerOperation(Summary = "User Registration", Description = "Registers a new user with a username, password, email, and optional role.")]
+        [SwaggerOperation(Summary = "User Registration", Description = "Registers a new user with a username, password, email, and role ('admin' or 'guest').")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
         {
             if (string.IsNullOrWhiteSpace(registerRequest.Username) ||
@@ -99,6 +99,11 @@ namespace HotelBooking.API.Controllers
                 string.IsNullOrWhiteSpace(registerRequest.Email))
             {
                 return BadRequest(new { message = "Username, password, and email are required." });
+            }
+
+            if (registerRequest.Role != "admin" && registerRequest.Role != "guest")
+            {
+                return BadRequest(new { message = "Invalid role. Allowed values: 'admin', 'guest'." });
             }
 
             var existingUser = await _userService.GetUserByUsernameAsync(registerRequest.Username);
@@ -110,14 +115,15 @@ namespace HotelBooking.API.Controllers
             var user = new User
             {
                 Username = registerRequest.Username,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerRequest.Password), // Hash password
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerRequest.Password),
                 Email = registerRequest.Email,
-                Role = registerRequest.Role ?? "guest"
+                Role = registerRequest.Role
             };
 
             await _userService.CreateUserAsync(user);
             return Ok(new { message = "User registered successfully." });
         }
+
 
         /// <summary>
         /// Generates a JWT token for authenticated users.
