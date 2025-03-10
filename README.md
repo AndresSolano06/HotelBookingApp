@@ -1,32 +1,32 @@
 # **Hotel Booking API** 🏨
 
-## 📌 **Descripción**
-Hotel Booking API es una **API RESTful** para la gestión de hoteles, habitaciones y reservas. Proporciona endpoints para **crear, actualizar, obtener y eliminar** hoteles, habitaciones y reservas de manera eficiente.
+## 📌 **Description**
+Hotel Booking API is a **RESTful API** for managing hotels, rooms, and reservations. It provides endpoints to **create, update, retrieve, and delete** hotels, rooms, and reservations efficiently.
 
-🌐 **Documentación Swagger**: [Swagger UI](https://hotelbookingazure.azurewebsites.net/swagger/index.html)
+🌐 **Swagger Documentation**: [Swagger UI](https://hotelbookingazure.azurewebsites.net/swagger/index.html)
 
 ---
 
-## 🏰 **Tecnologías Utilizadas**
+## 🏠 **Technologies Used**
 - ⚡ **.NET 8.0 (ASP.NET Core Web API)**
-- 💪 **C# para el Backend**
+- 💪 **C# for Backend**
 - 💪 **Entity Framework Core (EF Core)**
 - 📂 **SQL Server**
-- 🔎 **Swagger (NSwag) para Documentación**
-- ✨ **JWT para Autenticación y Autorización**
+- 🔎 **Swagger (NSwag) for Documentation**
+- ✨ **JWT for Authentication and Authorization**
 
 ---
 
-## ⚖️ **Autenticación y Autorización**
-Esta API utiliza **JWT (JSON Web Tokens)** para gestionar la autenticación y el acceso a los endpoints.
+## ⚖️ **Authentication & Authorization**
+This API uses **JWT (JSON Web Tokens)** to manage authentication and access control.
 
-### 🔑 **Roles Disponibles**
-- ✨ **Admin**: Puede gestionar hoteles y habitaciones.
-- 🛌 **Guest**: Puede buscar hoteles, hacer reservas y cancelarlas.
+### 🔑 **Available Roles**
+- ✨ **Admin**: Can manage hotels and rooms.
+- 🏡 **Guest**: Can search hotels, make reservations, and cancel them.
 
-🔗 **Para obtener un token JWT:**
-1. **Autenticarse en `/api/auth/login`** con un usuario registrado.
-2. Usar el `token` en las peticiones a endpoints protegidos.
+🔗 **To obtain a JWT token:**
+1. **Authenticate at `/api/auth/login`** with a registered user.
+2. Use the `token` for requests to protected endpoints.
 
 ```json
 {
@@ -35,61 +35,61 @@ Esta API utiliza **JWT (JSON Web Tokens)** para gestionar la autenticación y el
 }
 ```
 
-**Ejemplo de Token JWT:**
+**Example JWT Token Usage:**
 ```http
 Authorization: Bearer eyJhbGciOiJIUzI1...
 ```
 
 ---
 
-## 🚀 **Características**
-✔️ **Gestión de Hoteles** (CRUD, activación y desactivación).  
-✔️ **Gestión de Habitaciones** (CRUD, validación de disponibilidad).  
-✔️ **Reservas** (Crear, actualizar, cancelar, evitar duplicados).  
-✔️ **Validaciones avanzadas** (fechas, capacidad de habitaciones, ocupación).  
-✔️ **Autenticación con JWT** para seguridad.  
-✔️ **Documentación interactiva con Swagger**.  
+## 🚀 **Features**
+✔️ **Hotel Management** (CRUD, activation & deactivation).  
+✔️ **Room Management** (CRUD, availability validation).  
+✔️ **Reservations** (Create, update, cancel, avoid duplicates).  
+✔️ **Advanced validations** (dates, room capacity, occupancy).  
+✔️ **JWT Authentication** for security.  
+✔️ **Interactive Documentation with Swagger**.  
 
 ---
 
-## 📂 **Documentación de Endpoints**
+## 📂 **API Endpoints Documentation**
 
-### 🏨 **Gestión de Hoteles**
-| Método  | Endpoint             | Descripción |
+### 🏨 **Hotel Management**
+| Method  | Endpoint             | Description |
 |---------|---------------------|-------------|
-| **GET** | `/api/hotel`        | Obtener todos los hoteles activos. |
-| **GET** | `/api/hotel/{id}`   | Obtener un hotel por ID. |
-| **POST** | `/api/hotel`        | Crear un nuevo hotel (**Admin Only**). |
-| **PATCH** | `/api/hotel/{id}/status` | Activar/Desactivar un hotel. |
+| **GET** | `/api/hotel`        | Retrieve all active hotels. |
+| **GET** | `/api/hotel/{id}`   | Retrieve a hotel by ID. |
+| **POST** | `/api/hotel`        | Create a new hotel (**Admin Only**). |
+| **PATCH** | `/api/hotel/{id}/status` | Activate/Deactivate a hotel. |
 
-**Ejemplo (Crear Hotel)**
+**Example (Create Hotel)**
 ```json
 {
   "name": "Hotel Paradise",
-  "address": "Calle 123",
-  "city": "Bogotá",
+  "address": "Street 123",
+  "city": "Bogota",
   "isActive": true
 }
 ```
 
 ---
 
-### 🏠 **Gestión de Habitaciones**
-| Método  | Endpoint          | Descripción |
+### 🏡 **Room Management**
+| Method  | Endpoint          | Description |
 |---------|----------------|-------------|
-| **GET** | `/api/room/{hotelId}`  | Obtener habitaciones de un hotel. |
-| **POST** | `/api/room`  | Crear una habitación (**Admin Only**). |
-| **PUT** | `/api/room/{id}` | Actualizar una habitación. |
-| **PATCH** | `/api/room/{id}/status` | Activar/Desactivar una habitación. |
+| **GET** | `/api/room/{hotelId}`  | Retrieve rooms of a hotel. |
+| **POST** | `/api/room`  | Create a room (**Admin Only**). |
+| **PUT** | `/api/room/{id}` | Update a room. |
+| **PATCH** | `/api/room/{id}/status` | Activate/Deactivate a room. |
 
-**Ejemplo (Crear una Habitación)**
+**Example (Create a Room)**
 ```json
 {
   "hotelId": 3,
   "type": "Suite",
   "basePrice": 350000.00,
   "taxes": 70000.00,
-  "location": "Piso 8",
+  "location": "Floor 8",
   "capacity": 4,
   "isActive": true
 }
@@ -97,14 +97,14 @@ Authorization: Bearer eyJhbGciOiJIUzI1...
 
 ---
 
-### 🗃️ **Gestión de Reservas**
-| Método  | Endpoint                | Descripción |
+### 🗃️ **Reservation Management**
+| Method  | Endpoint                | Description |
 |---------|------------------------|-------------|
-| **POST** | `/api/reservation`     | Crear una reserva (**Guest Only**). |
-| **PUT** | `/api/reservation/{id}` | Actualizar una reserva. |
-| **DELETE** | `/api/reservation/{id}` | Cancelar una reserva. |
+| **POST** | `/api/reservation`     | Create a reservation (**Guest Only**). |
+| **PUT** | `/api/reservation/{id}` | Update a reservation. |
+| **DELETE** | `/api/reservation/{id}` | Cancel a reservation. |
 
-**Ejemplo (Crear Reserva)**
+**Example (Create Reservation)**
 ```json
 {
   "roomId": 3,
@@ -129,17 +129,17 @@ Authorization: Bearer eyJhbGciOiJIUzI1...
 
 ---
 
-## 🔧 **Instalación y Configuración**
-### ⚡ **Requisitos**
-1. **Instalar .NET 8.0 SDK** → [Descargar](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)  
-2. **Configurar la base de datos en `appsettings.json`**
+## 🔧 **Installation & Setup**
+### ⚡ **Requirements**
+1. **Install .NET 8.0 SDK** → [Download](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)  
+2. **Configure the database in `appsettings.json`**
 ```json
 "ConnectionStrings": {
   "DefaultConnection": "Server=your-server;Database=HotelBooking;User Id=your-user;Password=your-password;"
 }
 ```
 
-### ⏳ **Pasos para ejecutar**
+### ⏳ **Steps to Run**
 ```sh
 git clone https://github.com/AndresSolano06/HotelBookingApp.git
 cd HotelBookingApp
@@ -147,9 +147,3 @@ dotnet restore
 dotnet ef database update
 dotnet run
 ```
-
----
-
-## 📚 **Licencia**
-Este proyecto está licenciado bajo **MIT License** - Ver el archivo [LICENSE](LICENSE).
-
